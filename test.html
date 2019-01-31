@@ -1,0 +1,273 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <title>Cellular Automata</title>
+  <meta name="description" content="Cellular Automata">
+  <meta name="author" content="lehcsirk">
+
+  <link rel="stylesheet" href="css/styles.css?v=1.0">
+
+</head>
+
+
+
+<body>
+	
+  <script>
+
+  	// Create blank table
+  	var width = 30;
+  	var height = 30;
+  	var no = "▢";
+  	var yes = "█";
+
+  	var table = new Array(width);
+  	var tempTable = new Array(width);	//Holds data between generations
+
+  	for(var k = 0; k < width; k++)
+  	{
+  		table[k] = new Array(height);
+  		tempTable[k] = new Array(height);
+  	}
+
+  	// Fill empty tables
+  	for(var i = 0; i < height; i++)
+  	{
+  		for(var j = 0; j < width; j++)
+  		{
+  			table[i][j] = no;
+  			tempTable[i][j] = no;
+  		}
+  	}
+
+/*
+  	// Generate from seed [Top to Bottom]
+  	for(var i = 0; i < height; i++)
+  	{
+  		for(var j = 0; j < width; j++)
+  		{
+  			if(i>=1 && j>= 1)
+  			{
+	  			if((table[i-1][j-1] == yes) && (table[i-1][j] == yes) && (table[i-1][j+1] == yes))
+	  			{
+	  				table[i][j] = no;
+	  			}
+	  			if((table[i-1][j-1] == yes) && (table[i-1][j] == yes) && (table[i-1][j+1] == no))
+	  			{
+	  				table[i][j] = no;
+	  			}
+	  			if((table[i-1][j-1] == yes) && (table[i-1][j] == no) && (table[i-1][j+1] == yes))
+	  			{
+	  				table[i][j] = no;
+	  			}
+	  			if((table[i-1][j-1] == yes) && (table[i-1][j] == no) && (table[i-1][j+1] == no))
+	  			{
+	  				table[i][j] = yes;
+	  			}
+	  			if((table[i-1][j-1] == no) && (table[i-1][j] == yes) && (table[i-1][j+1] == yes))
+	  			{
+	  				table[i][j] = yes;
+	  			}
+	  			if((table[i-1][j-1] == no) && (table[i-1][j] == yes) && (table[i-1][j+1] == no))
+	  			{
+	  				table[i][j] = yes;
+	  			}
+	  			if((table[i-1][j-1] == no) && (table[i-1][j] == no) && (table[i-1][j+1] == yes))
+	  			{
+	  				table[i][j] = yes;
+	  			}
+	  			if((table[i-1][j-1] == no) && (table[i-1][j] == no) && (table[i-1][j+1] == no))
+	  			{
+	  				table[i][j] = no;
+	  			}
+  			}
+  		}
+  	}
+*/
+  	function checkNeighbors(x, y)
+  	{
+  		var numNeighbors = 0;
+  		
+  		for(var i = (x-1); i <= (x+1); i++)
+  		{
+  			for(var j = (y-1); j <= (y+1); j++)
+  			{
+  				if(table[i][j] == yes)
+		  		{
+		  			if(i!=x || j!=y)
+		  			{
+		  				numNeighbors++;
+		  			}
+		  		}
+  			}
+  		}
+  		return numNeighbors;
+  	}
+
+  	// Custom seed
+ //  	for(var j = width/4; j < width*3/4; j++)
+	// {
+	// 	table[j][width/2] = yes;
+	// }
+	// for(var j = 0; j < width; j++)
+	// {
+	// 	table[height/2][j] = yes;
+	// }
+
+	var initSeedAlive = 0;
+	// Random seed
+	for(var i = 0; i < height; i++)
+  	{
+  		for(var j = 0; j < width; j++)
+  		{
+  			if(Math.floor((Math.random() * 2) + 1) == 2)
+  			{
+	  			table[i][j] = yes;
+	  			initSeedAlive++;
+  			}
+  		}
+  	}
+
+	function doGame()
+	{
+		document.body.innerHTML = '<canvas id="myCanvas" width="100" height="100" style="border:1px solid #c3c3c3;"> Your browser does not support the canvas element.</canvas><br><br>';
+	  	
+  		// Write table to the page
+	  	for(var i = 0; i < height; i++)
+	  	{
+	  		for(var j = 0; j < width; j++)
+	  		{
+	  			document.write("<nobr style='font-size: 10px; color: black; line-height:8px'>" + table[i][j]) + "</nobr>";
+	  		}
+			document.write("<br>");
+	  	}
+	  	document.write("<br>");
+
+	  	// Conway's Game Rules applied from table to tempTable
+	  	for(var i = 1; i < height-1; i++)
+	  	{
+	  		for(var j = 1; j < width-1; j++)
+	  		{	
+				if(table[i][j] == yes)	// if alive
+				{
+					// Any live cell with fewer than two live neighbors dies, as if by underpopulation.
+	  				if(checkNeighbors(i, j) < 2)
+	  				{
+	  					tempTable[i][j] = no;
+	  				}
+	  				// Any live cell with two or three live neighbors lives on to the next generation.
+	  				if(checkNeighbors(i, j) == 2 || checkNeighbors(i, j) == 3)
+	  				{
+	  					tempTable[i][j] = yes;
+	  				}
+				  	// Any live cell with more than three live neighbors dies, as if by overpopulation.
+				  	if(checkNeighbors(i, j) > 3)
+	  				{
+	  					tempTable[i][j] = no;
+	  				}
+	  			}
+	  			if(table[i][j] == no)	// if dead 
+	  			{
+					// Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
+					if(checkNeighbors(i, j) == 3)
+	  				{
+	  					tempTable[i][j] = yes;
+	  				}
+	  			}  			
+	  		}
+	  	}
+
+	  	// Fill table with tempTable
+	  	for(var i = 0; i < height; i++)
+	  	{
+	  		for(var j = 0; j < width; j++)
+	  		{
+	  			table[i][j] = tempTable[i][j];
+	  		}
+	  	}
+	}
+
+	var i = 0;                     //  set your counter to 1
+	var generations = 200;
+	var aliveTotal = 0;
+	var deadTotal = 0;
+	function myLoop()
+	{  
+		//  create a loop function
+	   	setTimeout(function ()
+	   	{    //  call a 3s setTimeout when the loop is called
+      		doGame();          //  your code here
+      		document.write("Current Generation: " + i + "<br>");
+      	
+      		//==============
+      		var alive = 0;
+			var dead = 0;
+
+			for(var m = 0; m < height; m++)
+		  	{
+		  		for(var n = 0; n < width; n++)
+		  		{
+		  			if(table[m][n] == yes)
+		  			{
+		  				alive++;
+		  			}
+		  			else if(table[m][n] == no)
+		  			{
+		  				dead++;
+		  			}
+		  		}
+		  	}
+		  	aliveTotal+=alive;
+		  	deadTotal+=dead;
+		  	document.write("Alive: " + alive + "<br>");
+			document.write("Dead: " + dead + "<br>");
+		  	document.write("AliveTotal: " + aliveTotal + "<br>");
+			document.write("DeadTotal: " + deadTotal + "<br>");
+			document.write("Percent Alive: " + alive/(dead+alive)*100 + "<br>");
+			document.write("Percent Alive Average: " + aliveTotal/(deadTotal+aliveTotal)*100 + "<br>");
+			document.write("Percent Alive Initial: " + initSeedAlive/(height*width)*100);
+			//==========
+
+			if(i>=1)
+			{
+				var canvas = document.getElementById("myCanvas");
+				var ctx = canvas.getContext("2d");
+
+				ctx.fillStyle = "#FF0000";
+				var xCoord = (alive/(dead+alive))*canvas.width*4;
+				var yCoord = (dead/(dead+alive))*canvas.height/2;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.fillRect(xCoord,yCoord,5,5);
+
+				ctx.fillStyle = "#2566CE";
+				var xCoord = (aliveTotal/(deadTotal+aliveTotal))*canvas.width*4;
+				var yCoord = (deadTotal/(deadTotal+aliveTotal))*canvas.height/2;
+				ctx.fillRect(xCoord,yCoord,5,5);
+
+
+			}
+
+      		
+		    i++;                     //  increment the counter
+	      	if (i <= generations)
+	      	{            //  if the counter < 10, call the loop function
+	        	myLoop();             //  ..  again which will trigger another 
+		   	}                        //  ..  setTimeout()
+	   }, 25)
+	}
+
+	myLoop();                      //  start the loop
+	
+
+	
+
+	
+
+  </script>
+
+</body>
+</html>
